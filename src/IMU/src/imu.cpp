@@ -98,12 +98,12 @@ void read_data() {
         imuMessage.orientation.set__w(q.w);
         imuMessagePublisher->publish(imuMessage);
         sprintf(buffer, "Quaternion --> x: %f y: %f z: %f w: %f", q.x, q.y, q.z, q.w);
-        printf(buffer);
+        std::cout << buffer << std::endl;
     }
 }
 
 void publish_string_message(std::string messageData) {
-    printf(messageData.c_str());
+    std::cout << messageData << std::endl;
     stringMessage.data = messageData;
     stringPublisher->publish(stringMessage);
 }
