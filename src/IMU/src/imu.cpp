@@ -4,6 +4,7 @@
 
 // include any thing required - do not forget to use the .hpp extension for ROS 2 files
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/Imu.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <algorithm>
 
@@ -19,43 +20,61 @@ inline size_t findIndex(const std::string &name, const std::vector<std::string> 
 }
 
 
-class BasicNode : public rclcpp::Node
+class ImuNode : public rclcpp::Node
 {
 public:
-    BasicNode(rclcpp::NodeOptions options) : Node("node_name", options)
+    ImuNode(rclcpp::NodeOptions options) : Node("imu_node", options)
     {
+        // initialize device
+        printf("Initializing I2C devices...\n");
+        accelgyro.initialize();
+
+        // verify connection
+        printf("Testing device connections...\n");
+        printf(accelgyro.testConnection() ? "MPU6050 connection successful\n" : "MPU6050 connection failed\n");
+
         // init whatever is needed for your node
         
         // init subscribers
-        subscriber = create_subscription<geometry_msgs::msg::Twist>(
-            "topic",    // which topic
-            10,         // QoS            
-            [this](geometry_msgs::msg::Twist::UniquePtr msg)    // callback are perfect for lambdas
-            {
-                last_twist = *msg;
-            });
+        // subscriber = create_subscription<geometry_msgs::msg::Twist>(
+        //     "topic",    // which topic
+        //     10,         // QoS            
+        //     [this](geometry_msgs::msg::Twist::UniquePtr msg)    // callback are perfect for lambdas
+        //     {
+        //         last_twist = *msg;
+        //     });
             
         // init publishers
-        publisher = create_publisher<geometry_msgs::msg::Pose2D>("ground_truth", 10);   // topic + QoS
+        // publisher = create_publisher<sensor_msgs::msg::Imu>("ground_truth", 10);   // topic + QoS
+        publisher = create_publisher<std_msgs::msg::String>("ground_truth", 10);   // topic + QoS
       
         // init timer - the function will be called with the given rate
-        publish_timer = create_wall_timer(100ms,    // rate
+        publish_timer = create_wall_timer(1000ms,    // rate
                                           [&]() 
-                                          {publisher->publish(pose);})
-    }   
-  
+                                          {loop();});
+    }
+
+void loop() {
+    // read raw accel/gyro measurements from device
+    accelgyro.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+    // display accel/gyro x/y/z values
+    sprintf(buffer, "a/g: %6hd %6hd %6hd   %6hd %6hd %6hd\n",ax,ay,az,gx,gy,gz);
+    message.data = buffer;
+    publisher->publish(message);
+}
+
 private:
-    // declare any subscriber / publisher / timer
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr subscriber;
-    geometry_msgs::msg::Twist last_twist;
+    char buffer[300];
+    MPU6050 accelgyro;
+    int16_t ax, ay, az;
+    int16_t gx, gy, gz;
     
-    
-    rclcpp::Publisher<geometry_msgs::msg::Pose2D>::SharedPtr publisher;
-    geometry_msgs::msg::Pose2D pose;
+    rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher;
+    std_msgs::msg::String message;
     
     rclcpp::TimerBase::SharedPtr publish_timer;    
 };
 
 // register this plugin
-#include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(BasicNode)
+// #include "rclcpp_components/register_node_macro.hpp"
+// RCLCPP_COMPONENTS_REGISTER_NODE(ImuNode)
