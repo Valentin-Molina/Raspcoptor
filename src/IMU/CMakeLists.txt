@@ -10,8 +10,16 @@ find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(rclcpp_components REQUIRED)
 
-# TODO build the node as a library
-add_library(IMU SHARED)
+include_directories(include)
+add_library(I2Cdev SHARED 
+            include/I2Cdev.h src/I2Cdev.cpp)
+add_library(MPU6050 SHARED 
+            include/MPU6050.h src/MPU).cpp)
+target_link_libraries(MPU6050 I2Cdev)
+
+add_executable(imu_node src/imu.cpp)
+target_link_libraries(imu_node MPU6050)
+
 
 # TODO include non-ROS2 directories (OpenCV, Yaml-cpp, etc.)
 #target_include_directories(IMU PRIVATE ${YamlCpp_INCLUDE_DIRS})
