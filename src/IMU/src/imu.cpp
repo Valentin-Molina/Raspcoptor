@@ -4,9 +4,10 @@
 
 // include any thing required - do not forget to use the .hpp extension for ROS 2 files
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/Imu.hpp>
+//#include <sensor_msgs/msg/Imu.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <algorithm>
+#include <iostream>
 
 #include <MPU6050.h>
 
@@ -60,6 +61,7 @@ void loop() {
     // display accel/gyro x/y/z values
     sprintf(buffer, "a/g: %6hd %6hd %6hd   %6hd %6hd %6hd\n",ax,ay,az,gx,gy,gz);
     message.data = buffer;
+    std::cout << message.data << std::endl ;
     publisher->publish(message);
 }
 
@@ -78,3 +80,12 @@ private:
 // register this plugin
 // #include "rclcpp_components/register_node_macro.hpp"
 // RCLCPP_COMPONENTS_REGISTER_NODE(ImuNode)
+
+int main(int argc, char** argv)
+{
+  rclcpp::init(argc, argv);
+  rclcpp::NodeOptions options;
+  rclcpp::spin(std::make_shared<ImuNode>(options));
+  rclcpp::shutdown();
+  return 0;
+}
