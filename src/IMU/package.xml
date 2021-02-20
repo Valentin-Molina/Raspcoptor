@@ -13,6 +13,7 @@
 <!--  list the required ROS 2 dependencies  -->
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
   <depend>rclcpp_components</depend>  
 
   <export>
