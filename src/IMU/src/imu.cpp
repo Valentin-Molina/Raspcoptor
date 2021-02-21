@@ -68,7 +68,7 @@ public:
         }
 
         // init timer - the function will be called with the given rate
-        read_data_timer = create_wall_timer(1000ms,    // rate
+        read_data_timer = create_wall_timer(10ms,    // rate
                                             [&]() 
                                             {read_data();});
     }
